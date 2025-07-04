@@ -9,7 +9,6 @@ const analyzeHeadline = async (headline) => {
 Output only the raw JSON object.`;
 
     const completion = await openai.chat.completions.create({
-      // *** THIS IS THE FIX: Use a model that supports JSON mode ***
       model: "gpt-4-turbo", 
       messages: [
         { role: "system", content: systemPrompt },

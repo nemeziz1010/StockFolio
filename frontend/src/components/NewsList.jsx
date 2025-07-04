@@ -26,7 +26,6 @@ export const NewsList = ({ portfolioSymbols }) => {
         setArticles(response.data);
       } catch (err) {
         if (axios.isCancel(err)) {
-          // Request was canceled, do nothing.
         } else {
           setError('Failed to fetch news. Is the backend server running?');
           console.error(err);
