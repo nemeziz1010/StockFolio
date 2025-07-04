@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import api from '../api'; // Use our centralized api instance
 import { NewsCard } from './NewsCard';
 import { NewspaperIcon } from '@heroicons/react/24/outline';
 
@@ -9,38 +9,29 @@ export const NewsList = ({ portfolioSymbols }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const source = axios.CancelToken.source();
-    
     const fetchNews = async () => {
       setLoading(true);
       setError(null);
       try {
-        const API_BASE_URL = 'http://localhost:4000/api/news';
-        let url = `${API_BASE_URL}/general`;
-        
+        let response;
         if (portfolioSymbols && portfolioSymbols.length > 0) {
-          url = `${API_BASE_URL}/filtered?stocks=${portfolioSymbols.join(',')}`;
+          // Use the new POST endpoint for smart filtering
+          response = await api.post('/news/filtered');
+        } else {
+          // Use the existing GET endpoint for general news
+          response = await api.get('/news/general');
         }
-        
-        const response = await axios.get(url, { cancelToken: source.token });
         setArticles(response.data);
       } catch (err) {
-        if (axios.isCancel(err)) {
-        } else {
-          setError('Failed to fetch news. Is the backend server running?');
-          console.error(err);
-        }
+        setError('Failed to fetch news. Is the backend server running?');
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchNews();
-
-    return () => {
-      source.cancel('Component unmounted, canceling request.');
-    };
-  }, [JSON.stringify(portfolioSymbols)]);
+  }, [JSON.stringify(portfolioSymbols)]); // Re-run effect if portfolioSymbols change
 
   if (loading) {
     return (

@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  // ✅ Verify Frontend Sends Credentials
-  withCredentials: true, // <-- IMPORTANT
+  withCredentials: true, //  IMPORTANT
 });
 
 // Add a request interceptor to include the auth token in headers

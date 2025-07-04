@@ -1,38 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { NewsList } from '../components/NewsList';
 import { useAuth } from '../context/AuthContext';
-import api from '../api'; // Import the new api instance
+import api from '../api';
 
 export const PortfolioPage = () => {
   const [portfolio, setPortfolio] = useState([]);
   const [isLinked, setIsLinked] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [message, setMessage] = useState('');
-  const { token } = useAuth(); // Get the token from our AuthContext
+  const { token } = useAuth();
 
-  // This effect now correctly depends on the user's token
   useEffect(() => {
-    // THIS IS THE FIX: Reset all local state whenever the user changes (i.e., token changes)
-    setPortfolio([]);
-    setIsLinked(false);
-    setMessage('');
-    
     const fetchInitialData = async () => {
-        // Only fetch data if a user is logged in (i.e., a token exists)
-        if (token) {
-            try {
-              const portfolioRes = await api.post('/portfolio');
-              if (portfolioRes.data.success) setPortfolio(portfolioRes.data.portfolio);
-    
-              const statusRes = await api.post('/broker/status');
-              if (statusRes.data.success) setIsLinked(statusRes.data.isLinked);
-            } catch (error) {
-              console.error("Failed to fetch initial data", error);
-            }
+      if (token) {
+        try {
+          const portfolioRes = await api.post('/portfolio');
+          if (portfolioRes.data.success) setPortfolio(portfolioRes.data.portfolio);
+
+          const statusRes = await api.post('/broker/status');
+          if (statusRes.data.success) setIsLinked(statusRes.data.isLinked);
+        } catch (error) {
+          console.error("Failed to fetch initial data", error);
         }
+      }
     };
     fetchInitialData();
-  }, [token]); // The dependency array ensures this runs on login/logout
+  }, [token]);
   
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -70,7 +63,6 @@ export const PortfolioPage = () => {
     }
   };
 
-  // ... (rest of the JSX is unchanged)
   return (
     <div>
       <header className="mb-8">
@@ -95,9 +87,10 @@ export const PortfolioPage = () => {
         <div>
             {portfolio.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                {portfolio.map(stock => (
-                    <span key={stock} className="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">
-                        {stock}
+                {/* Updated to map over portfolio objects and display the symbol */}
+                {portfolio.map(item => (
+                    <span key={item.symbol} className="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">
+                        {item.symbol}
                     </span>
                 ))}
                 </div>
@@ -106,12 +99,14 @@ export const PortfolioPage = () => {
             )}
         </div>
       </div>
+      {/* Updated to pass only the symbols to the NewsList component */}
       {portfolio.length > 0 && (
         <div>
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Filtered News For You</h2>
-            <NewsList portfolioSymbols={portfolio} />
+            <NewsList portfolioSymbols={portfolio.map(item => item.symbol)} />
         </div>
       )}
     </div>
   );
 };
+
