@@ -9,11 +9,10 @@ const extractKeywords = (instrumentName) => {
     const stopWords = new Set(['THE', 'AND', 'PRIVATE', 'LIMITED', 'LTD', 'INDIA', 'CORPORATION', 'CORP', 'ETF']);
     return instrumentName
         .toUpperCase()
-        .split(/[\s,.-]+/) // Split by spaces, commas, dots, or hyphens
+        .split(/[\s,.-]+/) 
         .filter(word => word.length > 2 && !stopWords.has(word));
 };
 
-// ... (The /connect, /callback, and /status routes are unchanged) ...
 router.post('/connect', protect, (req, res) => {
   try {
     req.session.userId = req.user.id;
@@ -74,11 +73,10 @@ router.post('/sync-portfolio', protect, async (req, res) => {
 
         for (const holding of holdings) {
             const symbol = holding.tradingsymbol;
-            let keywords = [symbol]; // Always include the symbol itself as a keyword
+            let keywords = [symbol]; 
 
             try {
-                // Fetch instrument details to get the full name
-                const instruments = await kc.getInstruments(["NSE"]); // Or other exchanges
+                const instruments = await kc.getInstruments(["NSE"]); 
                 const instrumentData = instruments.find(inst => inst.tradingsymbol === symbol);
                 
                 if (instrumentData && instrumentData.name) {

@@ -1,4 +1,3 @@
-// This is the complete, corrected server.js file for deployment.
 
 const express = require('express');
 const cors = require('cors');
@@ -20,6 +19,8 @@ const { protect } = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+app.set('trust proxy', 1);
+
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
@@ -38,7 +39,9 @@ app.use(session({
     }),
     cookie: {
         maxAge: 1000 * 60 * 15, // 15 minutes
-        secure: process.env.NODE_ENV === 'production'
+        secure: true, 
+        httpOnly: true,
+        sameSite: 'none' 
     }
 }));
 
@@ -76,16 +79,19 @@ app.post('/api/news/filtered', protect, async (req, res) => {
 });
 
 
-// --- Worker Functions ---
 const runAnalysisWorker = async () => {
     console.log('Running AI Analysis Worker...');
     try {
+        // Find up to 10 articles that have not been analyzed yet
         const articlesToAnalyze = await Article.find({ aiAnalysis: { $exists: false } }).limit(10);
+        
         if (articlesToAnalyze.length === 0) {
             console.log('No new articles to analyze.');
             return;
         }
+
         console.log(`Found ${articlesToAnalyze.length} articles to analyze.`);
+
         for (const article of articlesToAnalyze) {
             const analysis = await analyzeHeadline(article.headline);
             if (analysis) {
@@ -93,6 +99,7 @@ const runAnalysisWorker = async () => {
                 await article.save();
                 console.log(`Successfully analyzed and saved: "${article.headline}"`);
             }
+            // Add a small delay to avoid hitting API rate limits
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
     } catch (error) {
@@ -112,7 +119,6 @@ cron.schedule('*/30 * * * *', async () => {
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
     
-    // --- THIS IS THE FIX ---
     // Run the scraper and AI worker once on initial startup.
     (async () => {
       console.log('Running initial scrape and analysis on startup...');

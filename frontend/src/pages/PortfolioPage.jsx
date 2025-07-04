@@ -87,7 +87,7 @@ export const PortfolioPage = () => {
         <div>
             {portfolio.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                {/* Updated to map over portfolio objects and display the symbol */}
+                
                 {portfolio.map(item => (
                     <span key={item.symbol} className="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">
                         {item.symbol}
@@ -99,7 +99,7 @@ export const PortfolioPage = () => {
             )}
         </div>
       </div>
-      {/* Updated to pass only the symbols to the NewsList component */}
+      
       {portfolio.length > 0 && (
         <div>
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Filtered News For You</h2>

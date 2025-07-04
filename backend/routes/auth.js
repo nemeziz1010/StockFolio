@@ -8,13 +8,11 @@ router.post('/register', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if user already exists
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // Create user
     user = await User.create({
       email,
       password,
@@ -32,20 +30,17 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  // Validate email & password
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Please provide an email and password' });
   }
 
   try {
-    // Check for user and include password in the query result
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Check if password matches
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
@@ -59,7 +54,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Helper function to create token and send response
 const sendTokenResponse = (user, statusCode, res) => {
   const token = user.getSignedJwtToken();
   const options = {

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowUpCircleIcon, ArrowDownCircleIcon, MinusCircleIcon } from '@heroicons/react/24/solid';
 
-// A mapping object to easily get styles and icons
 const indicatorMap = {
   Positive: {
     Icon: ArrowUpCircleIcon,

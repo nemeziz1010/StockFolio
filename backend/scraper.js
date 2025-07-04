@@ -12,7 +12,6 @@ const scrapeMoneycontrol = async () => {
     const $ = cheerio.load(data);
     const articles = [];
 
-    // Using the selector logic that you confirmed is working.
     $('#cagetory li.clearfix').each((i, el) => {
       const headline = $(el).find('h2 a').attr('title');
       const articleUrl = $(el).find('h2 a').attr('href');
@@ -29,7 +28,7 @@ const scrapeMoneycontrol = async () => {
     return articles;
   } catch (error) {
     console.error(`Error scraping Moneycontrol: ${error.message}`);
-    return []; // Return empty array on error
+    return []; 
   }
 };
 
@@ -62,7 +61,7 @@ const scrapeEconomicTimes = async () => {
     return articles;
   } catch (error) {
     console.error(`Error scraping The Economic Times: ${error.message}`);
-    return []; // Return empty array on error
+    return []; 
   }
 };
 
