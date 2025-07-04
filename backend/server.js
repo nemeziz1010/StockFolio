@@ -1,3 +1,5 @@
+// This is the complete, corrected server.js file for deployment.
+
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
@@ -35,7 +37,7 @@ app.use(session({
         collectionName: 'sessions'
     }),
     cookie: {
-        maxAge: 1000 * 60 * 15,
+        maxAge: 1000 * 60 * 15, // 15 minutes
         secure: process.env.NODE_ENV === 'production'
     }
 }));
@@ -44,12 +46,77 @@ app.use(session({
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/broker', brokerRoutes);
-app.use('/api/news', require('./routes/news')); // Consolidated news routes
+
+// General News Route
+app.get('/api/news/general', async (req, res) => {
+  try {
+    const articles = await Article.find().sort({ publishedAt: -1 }).limit(50);
+    res.json(articles);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Filtered News (Smart) Route
+app.post('/api/news/filtered', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.portfolio.length === 0) {
+      return res.json([]);
+    }
+    const allKeywords = [...new Set(user.portfolio.flatMap(item => item.keywords))];
+    if (allKeywords.length === 0) return res.json([]);
+    
+    const searchRegex = new RegExp(allKeywords.join('|'), 'i');
+    const articles = await Article.find({ headline: searchRegex }).sort({ publishedAt: -1 }).limit(50);
+    res.json(articles);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+
+// --- Worker Functions ---
+const runAnalysisWorker = async () => {
+    console.log('Running AI Analysis Worker...');
+    try {
+        const articlesToAnalyze = await Article.find({ aiAnalysis: { $exists: false } }).limit(10);
+        if (articlesToAnalyze.length === 0) {
+            console.log('No new articles to analyze.');
+            return;
+        }
+        console.log(`Found ${articlesToAnalyze.length} articles to analyze.`);
+        for (const article of articlesToAnalyze) {
+            const analysis = await analyzeHeadline(article.headline);
+            if (analysis) {
+                article.aiAnalysis = analysis;
+                await article.save();
+                console.log(`Successfully analyzed and saved: "${article.headline}"`);
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    } catch (error) {
+        console.error('Error in AI Analysis Worker:', error);
+    }
+};
+
+// --- Scheduled Cron Job ---
+cron.schedule('*/30 * * * *', async () => {
+  console.log('Running scheduled scrape job...');
+  await scrapeNews();
+  await runAnalysisWorker();
+});
+
 
 // --- Main Server Start ---
 app.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
-    // Optional: Initial scrape on start
-    // scrapeNews();
-    // runAnalysisWorker();
+    
+    // --- THIS IS THE FIX ---
+    // Run the scraper and AI worker once on initial startup.
+    (async () => {
+      console.log('Running initial scrape and analysis on startup...');
+      await scrapeNews();
+      await runAnalysisWorker();
+    })();
 });
