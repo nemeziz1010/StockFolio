@@ -1,25 +1,26 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend for Smart News App",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "axios": "^1.10.0",
-    "cheerio": "^1.1.0",
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "cheerio": "^1.0.0-rc.12",
     "connect-mongo": "^5.1.0",
     "cors": "^2.8.5",
-    "dotenv": "^17.0.1",
-    "express": "^5.1.0",
-    "express-session": "^1.18.1",
-    "kiteconnect": "^5.0.1",
-    "mongoose": "^8.16.1",
-    "node-cron": "^4.2.0",
-    "openai": "^5.8.2"
-  }
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "kiteconnect": "^4.0.0",
+    "mongoose": "^8.4.1",
+    "node-cron": "^3.0.3",
+    "openai": "^4.52.0"
+  },
+  "author": "",
+  "license": "ISC"
 }
